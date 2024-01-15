@@ -11,12 +11,12 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 // Connect to MongoDB
-const dbURI =
-  "mongodb+srv://bikrambhattarai296:BZedWPdlJPQFVJkn@cluster0.npfxkiq.mongodb.net/marketbasket?retryWrites=true&w=majority";
+// const dbURI =
+//   "mongodb+srv://bikrambhattarai296:BZedWPdlJPQFVJkn@cluster0.npfxkiq.mongodb.net/marketbasket?retryWrites=true&w=majority";
 
 const connectToDatabase = async () => {
   try {
-    await mongoose.connect(dbURI, {});
+    await mongoose.connect(process.env.dbURI, {});
     console.log("CONNECTED TO DATABASE SUCCESSFULLY");
   } catch (error) {
     console.error("COULD NOT CONNECT TO DATABASE:", error.message);
@@ -61,10 +61,11 @@ app.post('/login', async (req, res) => {
       if(!isPasswordValid) {
           return res.status(401).json({ error: 'Invalid credentials' })
       }
-      const token = jwt.sign({ userId: user._id }, SECRET_KEY, { expiresIn: '1hr' })
+      //jwt
+      const token = jwt.sign({ userId: user._id }, process.env.SECRET_KEY, { expiresIn: '1hr' })
       res.json({ message: 'Login successful' })
   } catch (error) {
-      res.status(500).json({ error: 'Error logging in' })
+      res.status(500).json(error)
   }
 })
 
@@ -76,6 +77,4 @@ const startServer = async () => {
     console.log(`Server is running on port  ${PORT}`);
   });
 };
-//middleware
-
 startServer();
