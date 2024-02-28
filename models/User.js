@@ -37,6 +37,13 @@ module.exports = (sequelize, DataTypes) => {
       address: {
         type: DataTypes.STRING,
       },
+      shop_logo: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue:
+          "https://images.unsplash.com/photo-1472851294608-062f824d29cc?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      },
+
       isVerified: {
         type: DataTypes.BOOLEAN,
         allowNull: false,
@@ -52,7 +59,8 @@ module.exports = (sequelize, DataTypes) => {
       timestamps: true,
       createdAt: "createdAt",
       updatedAt: "updatedAt",
-    });
+    }
+  );
 
   return User;
 };
