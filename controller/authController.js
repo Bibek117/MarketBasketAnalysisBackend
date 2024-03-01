@@ -1,22 +1,23 @@
-const { User, sequelize } = require("../models");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const { sendMail } = require("../services/sendMail");
+import User from '../models/User.js';
+import connection from '../models/index.js';
+import  bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import { sendMail } from '../services/sendMail.js'
+import { QueryTypes } from 'sequelize';
 
 const secretKey = process.env.JWT_SECRET_KEY;
 
 const authController = {
   async register(req, res) {
     try {
-      const { username, email, password, shop_name, owner_name, address } =
-        req.body;
+      const { username, email, password, shop_name, owner_name, address } = req.body;
       const hashedPass = await bcrypt.hash(password, 10); //10 salt rounds
 
       const verificationToken = jwt.sign({ email }, secretKey, {
         expiresIn: "1D",
       });
 
-      const user = await sequelize.query(
+      const user = await connection.query(
         "INSERT INTO users (username, email, password, shop_name, owner_name, address) VALUES (?, ?, ?, ?, ?, ?)",
         {
           replacements: [
@@ -27,7 +28,7 @@ const authController = {
             owner_name,
             address,
           ],
-          type: sequelize.QueryTypes.INSERT,
+          type: QueryTypes.INSERT,
         }
       );
       const mailData = {
@@ -50,37 +51,19 @@ const authController = {
           return res.status(500).json(err);
         });
     } catch (error) {
-      if (
-        error.name === "SequelizeUniqueConstraintError" &&
-        error.fields.username &&
-        error.fields.username.includes("unique_username_constraint_name")
-      ) {
-        res
-          .status(400)
-          .json({ message: "User with this username already exists" });
-      } else if (
-        error.name === "SequelizeUniqueConstraintError" &&
-        error.fields.email &&
-        error.fields.email.includes("unique_email_constraint_name")
-      ) {
-        res
-          .status(400)
-          .json({ message: "User with this email already exists" });
-      } else {
-        console.error(error);
-        res.status(500).json({ message: "Failed to register user" });
-      }
+      console.log(error)
+     return res.json({success : "fail" ,message :error.message})
     }
   },
 
   async login(req, res) {
     try {
       const { email, password } = req.body;
-      const user = await sequelize.query(
+      const user = await connection.query(
         "SELECT * from users WHERE email = ?",
         {
           replacements: [email],
-          type: sequelize.QueryTypes.SELECT,
+          type: QueryTypes.SELECT,
           model: User,
           mapToModel: true,
         }
@@ -151,4 +134,4 @@ const authController = {
   },
 };
 
-module.exports = authController;
+export default authController;
