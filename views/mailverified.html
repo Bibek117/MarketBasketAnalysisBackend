@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mail Verification Success</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        flex-direction: column; /* Add this line to align items in a column */
+    }
+
+    .success-message {
+        background-color: #d4edda; /* Light green background color */
+        color: #155724; /* Dark green text color */
+        padding: 10px;
+        border-radius: 5px;
+        margin-bottom: 20px; /* Add margin to separate message from button */
+    }
+
+    button {
+        background-color: black;
+        color: white;
+        padding: 10px 20px;
+        font-size: 16px;
+        border: none;
+        cursor: pointer;
+        text-decoration: none;
+    }
+</style>
+</head>
+<body>
+    <div class="success-message">Mail verified successfully!</div>
+    <a href="http://localhost:3000/guest/login">
+        <button>Go to Login Page</button>
+    </a>
+</body>
+</html>
+
