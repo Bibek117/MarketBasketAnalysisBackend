@@ -1,16 +1,20 @@
-import User from '../models/User.js';
-import connection from '../models/index.js';
-import  bcrypt from "bcrypt";
+import User from "../models/User.js";
+import connection from "../models/index.js";
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { sendMail } from '../services/sendMail.js'
-import { QueryTypes } from 'sequelize';
+import { sendMail } from "../services/sendMail.js";
+import { QueryTypes } from "sequelize";
+import viewsPath from "../views/filesUrl.js";
+import "dotenv/config";
 
 const secretKey = process.env.JWT_SECRET_KEY;
+const refreshSecretKey = process.env.REFRESH_TOKEN_SECRET;
 
 const authController = {
-  async register(req, res) {
+  async register(req, res, imageName) {
     try {
-      const { username, email, password, shop_name, owner_name, address } = req.body;
+      const { username, email, password, shop_name, owner_name, address } =
+        req.body;
       const hashedPass = await bcrypt.hash(password, 10); //10 salt rounds
 
       const verificationToken = jwt.sign({ email }, secretKey, {
@@ -18,7 +22,7 @@ const authController = {
       });
 
       const user = await connection.query(
-        "INSERT INTO users (username, email, password, shop_name, owner_name, address) VALUES (?, ?, ?, ?, ?, ?)",
+        "INSERT INTO users (username, email, password, shop_name, owner_name, address,shop_logo) VALUES (?, ?, ?, ?, ?, ?, ?)",
         {
           replacements: [
             username,
@@ -27,10 +31,12 @@ const authController = {
             shop_name,
             owner_name,
             address,
+            imageName,
           ],
           type: QueryTypes.INSERT,
         }
       );
+
       const mailData = {
         recepEmail: email,
         subject: "Email verification link",
@@ -39,27 +45,28 @@ const authController = {
 
       sendMail(mailData)
         .then((response) => {
-          return res
-            .status(201)
-            .json({
-              message:
-                "User created successfully. Please verify your mail before logging in. Email has been sent to your mail",
-            });
+          return res.status(201).json({
+            success: true,
+            message:
+              "User created successfully. Please verify your mail before logging in. Email has been sent to your mail",
+          });
         })
         .catch((err) => {
           console.log(err);
-          return res.status(500).json(err);
+          return res
+            .status(500)
+            .json({ success: false, message: "Error sending mail" });
         });
     } catch (error) {
-      console.log(error)
-     return res.json({success : "fail" ,message :error.message})
+      console.log(error);
+      return res.json({ success: false, message: error });
     }
   },
 
   async login(req, res) {
     try {
       const { email, password } = req.body;
-      const user = await connection.query(
+      const users = await connection.query(
         "SELECT * from users WHERE email = ?",
         {
           replacements: [email],
@@ -68,19 +75,24 @@ const authController = {
           mapToModel: true,
         }
       );
+      const user = users[0];
       if (!user) {
-        return res.status(404).json({ message: "User not found" });
+        return res
+          .status(404)
+          .json({ success: false, message: "User not found" });
       }
       // console.log(password)
       // console.log(user[0].password)
 
-      const validPass = await bcrypt.compare(password, user[0].password);
+      const validPass = await bcrypt.compare(password, user.password);
 
       if (!validPass) {
-        return res.status(401).json({ message: "Invalid email or password" });
+        return res
+          .status(401)
+          .json({ success: false, message: "Invalid email or password" });
       }
 
-      if (user[0].isVerified == false) {
+      if (user.isVerified == false) {
         const verificationToken = jwt.sign({ email }, secretKey, {
           expiresIn: "1D",
         });
@@ -92,26 +104,44 @@ const authController = {
         sendMail(mailData)
           .then((response) => {
             return res.status(500).json({
+              success: false,
               message:
                 "Please verify your mail before logging in. Email has been sent to your mail",
             });
           })
           .catch((err) => {
             console.log(err);
-            return res.status(500).json(err);
+            return res.status(500).json({ success: false, message: err });
           });
       } else {
-        const token = jwt.sign(
-          { email: user.email, username: user.username },
-          secretKey
+        const accessToken = jwt.sign(
+          { email: user.email, uername: user.username },
+          secretKey,
+          { expiresIn: "5h" }
         );
-        res.cookie("token", token, { httpOnly: true }); //httpOnly :true means only can be access by server preventing xss
-        return res.status(200).json({ message: "Authentication successful" });
-      }
+        const refreshT = jwt.sign({ email: user.email },refreshSecretKey, {
+          expiresIn: "7D",
+        });
+        res.cookie("refreshToken", refreshT, {
+          httpOnly: true,
+          maxAge: 7 * 24 * 60 * 60 * 1000, //7days
+          // path :"/"
+          // sameSite: "none",
+        }); //httpOnly :true means only can be access by server preventing xss
 
+        return res
+          .status(200)
+          .json({
+            success: true,
+            message: "Authentication successful",
+            accessToken,
+          });
+      }
     } catch (error) {
       console.log(error);
-      return res.status(500).json({ message: "Failed to authenticate user" });
+      return res
+        .status(500)
+        .json({ successs: false, message: "Failed to authenticate user" });
     }
   },
 
@@ -125,12 +155,42 @@ const authController = {
       const userMail = decoded.email;
 
       await User.update({ isVerified: true }, { where: { email: userMail } });
-
-      return res.status(200).json({ message: "Email verified successfully" });
+      return res.sendFile(viewsPath + "/mailverified.html");
     } catch (err) {
       console.log(err);
-      return res.status(500).json({ message: "Couldnot verify user email" });
+      return res.sendFile(viewsPath + "/errormailVerification.html");
     }
+  },
+
+  async refresh(req, res) {
+    try {
+      const cookie = req.cookies;
+      if (!cookie?.refreshToken)
+        return res.status(401).json({ message: "Unauthorized !" });
+      const rtoken = cookie.refreshToken;
+      console.log(rtoken)
+      const decoded = await jwt.verify(rtoken,refreshSecretKey);
+      console.log(decoded.email)
+     const foundUser = await User.findOne({ where: { email: decoded.email } });
+      if (!foundUser) return res.status(401).json({ message: "Unauthorized!" });
+
+      const accessToken = jwt.sign(
+        { email: foundUser.email, username: foundUser.username },
+        secretKey,
+        { expiresIn: "5h" }
+      );
+      return res.json({ accessToken });
+    } catch (err) {
+      console.error(err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  },
+
+  async logout(req, res) {
+    const cookies = req.cookies;
+    if (!cookies?.refreshToken) return res.sendStatus(204); //no content
+    res.clearCookie("refreshToken", { sameSite: "none", httpOnly: true });
+    res.json({ message: "Cookie cleared successfully" });
   },
 };
 

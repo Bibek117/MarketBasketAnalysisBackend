@@ -4,17 +4,33 @@ import cors from "cors";
 import "dotenv/config";
 import connection from "./models/index.js";
 import authRoutes from './routes/authRoutes.js'
+import cookieParser from "cookie-parser";
 
 //import must be always at top whereas require can be anywhere
 // const db = require("./models")
 
 const app = express();
 
-app.use(express.json()); //parse json dats
-app.use(express.urlencoded({ extended: false })); //parse form data
-app.use(cors());
-app.use(helmet()); //security
+//parse json data
+app.use(express.json()); 
 
+ //parse form data
+app.use(express.urlencoded({ extended: false })); 
+app.use(cookieParser());
+// allow request from all origins
+app.use(
+  cors({
+    origin: ["http://localhost:3000"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials : true,
+  })
+); 
+
+//security
+app.use(helmet()); 
+
+// making files inside pulci static
+app.use(express.static('public'));  
 
 app.use("/api/auth", authRoutes);
 
@@ -31,7 +47,14 @@ app.listen(port, async () => {
   }
 });
 
-//everydaykarma project part2 for image hanldling
+
+//allow only specicfic origin
+// app.use(
+//   cors({
+//     origin: ["http://localhost:4000"],
+//     methods: ["GET", "POST", "PUT", "DELETE"],
+//     credentials: true,
+//   }));
 
 //npm add @types/node -> intellisense for node packages
 //app.use(express.static());  to specify which files must be considered static
