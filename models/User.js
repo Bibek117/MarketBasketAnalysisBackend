@@ -1,5 +1,8 @@
 import connection from "./index.js";
 import { DataTypes } from "sequelize";
+import AnalysisData from "./AnalysisData.js";
+
+
 const User = connection.define(
   "User",
   {
@@ -62,5 +65,12 @@ const User = connection.define(
     updatedAt: "updatedAt",
   }
 );
+
+//one to many (user and analysisdata)
+User.hasMany(AnalysisData,{
+  onDelete : 'CASCADE',
+  onUpdate : 'CASCADE'
+});
+
 
 export default User;
