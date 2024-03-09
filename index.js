@@ -4,6 +4,7 @@ import cors from "cors";
 import "dotenv/config";
 import connection from "./models/index.js";
 import authRoutes from './routes/authRoutes.js'
+import analysisRoutes from './routes/analysisRoutes.js'
 import cookieParser from "cookie-parser";
 
 //import must be always at top whereas require can be anywhere
@@ -32,7 +33,10 @@ app.use(helmet());
 // making files inside pulci static
 app.use(express.static('public'));  
 
+
+//routes resgistered as middlewares
 app.use("/api/auth", authRoutes);
+app.use('/api/analysis',analysisRoutes);
 
 //sync({force:true})
 let port = process.env.PORT || 8001

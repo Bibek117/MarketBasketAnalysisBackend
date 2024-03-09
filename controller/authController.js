@@ -59,7 +59,7 @@ const authController = {
         });
     } catch (error) {
       console.log(error);
-      return res.json({ success: false, message: error });
+      return res.json({ success: false, message: error.errors });
     }
   },
 
@@ -75,21 +75,20 @@ const authController = {
           mapToModel: true,
         }
       );
-      const user = users[0];
-      if (!user) {
-        return res
-          .status(404)
-          .json({ success: false, message: "User not found" });
+      // console.log(users.length)
+      if (users.length == 0) {
+        return res.json({ success: false, message: "User not found" });
       }
+
+      const user = users[0];
+     
       // console.log(password)
       // console.log(user[0].password)
 
       const validPass = await bcrypt.compare(password, user.password);
 
       if (!validPass) {
-        return res
-          .status(401)
-          .json({ success: false, message: "Invalid email or password" });
+        return res.json({ success: false, message: "Invalid email or password" });
       }
 
       if (user.isVerified == false) {
@@ -129,12 +128,16 @@ const authController = {
           // sameSite: "none",
         }); //httpOnly :true means only can be access by server preventing xss
 
+        
+       // console.log(user.dataValues);
+        const {password,...rest} = user.dataValues;
         return res
           .status(200)
           .json({
             success: true,
             message: "Authentication successful",
             accessToken,
+            authUser : rest,
           });
       }
     } catch (error) {
@@ -169,7 +172,7 @@ const authController = {
         return res.status(401).json({ message: "Unauthorized !" });
       const rtoken = cookie.refreshToken;
       console.log(rtoken)
-      const decoded = await jwt.verify(rtoken,refreshSecretKey);
+      const decoded =  jwt.verify(rtoken,refreshSecretKey);
       console.log(decoded.email)
      const foundUser = await User.findOne({ where: { email: decoded.email } });
       if (!foundUser) return res.status(401).json({ message: "Unauthorized!" });
