@@ -12,7 +12,7 @@ const secretKey = process.env.JWT_SECRET_KEY;
 const refreshSecretKey = process.env.REFRESH_TOKEN_SECRET;
 
 const authController = {
-  async register(req, res, imageName) {
+  async register(req, res) {
     try {
       const { username, email, password, shop_name, owner_name, address } =
         req.body;
@@ -23,7 +23,7 @@ const authController = {
       });
 
       await connection.query(
-        "INSERT INTO users (username, email, password, shop_name, owner_name, address,shop_logo) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        "INSERT INTO users (username, email, password, shop_name, owner_name, address) VALUES (?, ?, ?, ?, ?, ?)",
         {
           replacements: [
             username,
@@ -32,7 +32,6 @@ const authController = {
             shop_name,
             owner_name,
             address,
-            imageName,
           ],
           type: QueryTypes.INSERT,
         }
