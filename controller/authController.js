@@ -1,4 +1,5 @@
 import User from "../models/User.js";
+import Energy from "../models/Energy.js";
 import connection from "../models/index.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -21,7 +22,7 @@ const authController = {
         expiresIn: "1D",
       });
 
-      const user = await connection.query(
+      await connection.query(
         "INSERT INTO users (username, email, password, shop_name, owner_name, address,shop_logo) VALUES (?, ?, ?, ?, ?, ?, ?)",
         {
           replacements: [
@@ -36,6 +37,11 @@ const authController = {
           type: QueryTypes.INSERT,
         }
       );
+      const user = await User.findOne({where :{email : email}})
+
+      const userID = user.id;
+     // console.log(userID)
+      await Energy.create({ UserId: userID });
 
       const mailData = {
         recepEmail: email,
@@ -59,7 +65,7 @@ const authController = {
         });
     } catch (error) {
       console.log(error);
-      return res.json({ success: false, message: error.errors });
+      return res.json({ success: false, message: error });
     }
   },
 
