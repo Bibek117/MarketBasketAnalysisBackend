@@ -1,7 +1,7 @@
 import connection from "./index.js";
 import { DataTypes } from "sequelize";
 import AnalysisData from "./AnalysisData.js";
-
+import Energy from "./Energy.js";
 
 const User = connection.define(
   "User",
@@ -71,6 +71,15 @@ User.hasMany(AnalysisData,{
   onDelete : 'CASCADE',
   onUpdate : 'CASCADE'
 });
+
+//one to one from user to energy_count
+User.hasOne(Energy,{
+  onDelete : "CASCADE",
+  onUpdate :"CASCADE",
+});
+Energy.belongsTo(User);
+
+
 
 
 export default User;
