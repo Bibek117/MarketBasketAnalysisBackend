@@ -3,9 +3,12 @@ import helmet from "helmet";
 import cors from "cors";
 import "dotenv/config";
 import connection from "./models/index.js";
+import cookieParser from "cookie-parser";
+
+//routes
 import authRoutes from './routes/authRoutes.js'
 import analysisRoutes from './routes/analysisRoutes.js'
-import cookieParser from "cookie-parser";
+import energyRoutes from './routes/energyRoutes.js';
 
 //import must be always at top whereas require can be anywhere
 // const db = require("./models")
@@ -21,9 +24,9 @@ app.use(cookieParser());
 // allow request from all origins
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: ["http://localhost:3000", "https://rc-epay.esewa.com.np"],
     methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials : true,
+    credentials: true,
   })
 ); 
 
@@ -37,6 +40,7 @@ app.use(express.static('public'));
 //routes resgistered as middlewares
 app.use("/api/auth", authRoutes);
 app.use('/api/analysis',analysisRoutes);
+app.use('/api/energy',energyRoutes)
 
 //sync({force:true})
 let port = process.env.PORT || 8001
