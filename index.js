@@ -21,10 +21,11 @@ app.use(express.json());
  //parse form data
 app.use(express.urlencoded({ extended: false })); 
 app.use(cookieParser());
+
 // allow request from all origins
 app.use(
   cors({
-    origin: ["http://localhost:3000", "https://rc-epay.esewa.com.np"],
+    origin: ["http://localhost:3000", "https://rc-epay.esewa.com.np"],  //i think no need to allow as it only send get request
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   })
@@ -39,8 +40,8 @@ app.use(express.static('public'));
 
 //routes resgistered as middlewares
 app.use("/api/auth", authRoutes);
-app.use('/api/analysis',analysisRoutes);
 app.use('/api/energy',energyRoutes)
+app.use('/api/analysis',analysisRoutes);
 
 //sync({force:true})
 let port = process.env.PORT || 8001

@@ -4,6 +4,7 @@ import Energy from "../models/Energy.js";
 import generateSign from "../services/generateSignature.js";
 import { unitEnergyPrice } from "../constants/constants.js";
 import { v4 as uuidv4 } from "uuid";
+
 const energyController = {
   async orderEnergy(req, res) {
     const t_uuid = uuidv4();
@@ -71,7 +72,7 @@ const energyController = {
         .split(",")
         .map((field) => `${field}=${decodedData[field] || ""}`)
         .join(",");
-      console.log(message);
+      //console.log(message);
       const signature = generateSign(message);
 
       if (signature !== decodedData.signature) {
@@ -101,6 +102,25 @@ const energyController = {
       return res.redirect(`${process.env.CLIENT_URL}/esewa-payment-error`);
     }
   },
+   async checkEnergy(req,res){
+    try{
+        const {userId} = req.body;
+    const data = await Energy.findOne({where : {UserId : userId}});
+    if(data?.energy_count > 0){
+        return res.json({success:true})
+    }else{
+        return res.json({success:false,message : "You dont have enough energy to perfom MBA !Please buy energy"})
+    } 
+    }catch(err){
+       return res.json({
+         success: false,
+         message:
+           err?.message || "Something went wrong",
+       }); 
+    }
+   
+}
+
 };
 
 export default energyController;
