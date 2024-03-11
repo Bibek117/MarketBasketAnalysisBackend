@@ -45,7 +45,7 @@ const authController = {
       const mailData = {
         recepEmail: email,
         subject: "Email verification link",
-        html: `<p>Please click <a href="http://localhost:8000/api/auth/verify/${verificationToken}">here</a> to verify your email address.</p>`,
+        html: `<h3>Please click <a href="http://localhost:8000/api/auth/verify/${verificationToken}">here</a> to verify your email address.</h3>`,
       };
 
       sendMail(mailData)
@@ -71,15 +71,11 @@ const authController = {
   async login(req, res) {
     try {
       const { email, password } = req.body;
-      const users = await connection.query(
-        "SELECT * from users WHERE email = ?",
-        {
-          replacements: [email],
-          type: QueryTypes.SELECT,
-          model: User,
-          mapToModel: true,
-        }
-      );
+      const users = await User.findAll({where : {
+        email : email,
+      },
+      include : Energy
+    })
       // console.log(users.length)
       if (users.length == 0) {
         return res.json({ success: false, message: "User not found" });
@@ -103,7 +99,7 @@ const authController = {
         const mailData = {
           recepEmail: email,
           subject: "Email verification link",
-          html: `<p>Please click <a href="http://localhost:8000/api/auth/verify/${verificationToken}">here</a> to verify your email address.</p>`,
+          html: `<h3>Please click <a href="http://localhost:8000/api/auth/verify/${verificationToken}">here</a> to verify your email address.</h3>`,
         };
         sendMail(mailData)
           .then((response) => {

@@ -1,4 +1,5 @@
 import AnalysisData from "../models/AnalysisData.js";
+import Energy from "../models/Energy.js";
 import connection from "../models/index.js";
 import axios from "axios";
 import fs from "fs";
@@ -8,7 +9,7 @@ const analysisController = {
   async dataUpload(req, res, fileName) {
     try {
       const { title, min_support, min_confidence, userId } = req.body;
-      console.log(min_confidence)
+      console.log(userId)
       if (
         title == "" ||
         min_confidence == "" ||
@@ -54,10 +55,14 @@ const analysisController = {
             { where: {userId : userId,title : title}}
           );
 
+          const energyData = await Energy.findOne({where :{UserId : userId}});
+         let energyTrack = energyData.energy_count - 1;
+         await Energy.update({energy_count : energyTrack},{where :{UserId : userId}});
           return res.status(200).json({
             success: true,
             message: "Analysis performed successfully",
             result: resultData,
+            energy_count : energyTrack
           });
         })
         .catch((error) => {
@@ -69,7 +74,7 @@ const analysisController = {
         });
     } catch (err) {
       // console.log(err)
-      return res.status(500).json({ success: false ,message : err.errors})
+      return res.status(500).json({ success: false ,message : err?.errors || "Something went wrong"})
     }
   },
 };
