@@ -5,6 +5,7 @@ import generateSign from "../services/generateSignature.js";
 import { unitEnergyPrice } from "../constants/constants.js";
 import { v4 as uuidv4 } from "uuid";
 
+
 const energyController = {
   async orderEnergy(req, res) {
     const t_uuid = uuidv4();
@@ -89,14 +90,16 @@ const energyController = {
       });
       
      const user = latestTrans.dataValues.User.dataValues;
-    // console.log(user);
+    console.log(user);
 
       const energy = await Energy.findOne({where : {UserId: user.id}});
       const totalEnergy = energy.energy_count + latestTrans.quantity;
       await Energy.update({energy_count : totalEnergy},{where : {
         UserId : user.id
       }})
-      return res.redirect(`${process.env.CLIENT_URL}/esewa-payment-success`);
+
+
+      return res.redirect(`${process.env.CLIENT_URL}/home`);
     } catch (err) {
       console.log(err);
       return res.redirect(`${process.env.CLIENT_URL}/esewa-payment-error`);

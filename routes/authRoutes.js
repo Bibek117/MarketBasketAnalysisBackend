@@ -4,6 +4,7 @@ import authController from '../controller/authController.js'
 
 //test
 import User from '../models/User.js'
+import Energy from '../models/Energy.js';
 import verifyJWT from '../middleware/verfiyJWT.js'
 
 
@@ -21,7 +22,8 @@ router.get('/refresh',authController.refresh);
 
 //test
 router.get('/test',verifyJWT,async (req,res)=>{
-  return res.json({success:true , message : "authenticated user"});
+  const energyData = await Energy.findOne({where:{UserId : req.id}})
+  return res.json({success:true , message : "authenticated user", energyCount : energyData.energy_count});
 })
 
 
