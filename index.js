@@ -10,6 +10,9 @@ import authRoutes from './routes/authRoutes.js'
 import analysisRoutes from './routes/analysisRoutes.js'
 import energyRoutes from './routes/energyRoutes.js';
 
+
+
+
 //import must be always at top whereas require can be anywhere
 // const db = require("./models")
 
@@ -69,3 +72,4 @@ app.listen(port, async () => {
 //app.use(express.static());  to specify which files must be considered static
 // express-rate-imiter librabry ddos
 //helmet library for security
+

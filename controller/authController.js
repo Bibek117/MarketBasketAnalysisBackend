@@ -115,7 +115,7 @@ const authController = {
           });
       } else {
         const accessToken = jwt.sign(
-          { email: user.email, uername: user.username },
+          { email: user.email, id: user.id },
           secretKey,
           { expiresIn: "5h" }
         );
@@ -179,7 +179,7 @@ const authController = {
       if (!foundUser) return res.status(401).json({ message: "Unauthorized!" });
 
       const accessToken = jwt.sign(
-        { email: foundUser.email, username: foundUser.username },
+        { email: foundUser.email, id: foundUser.id },
         secretKey,
         { expiresIn: "5h" }
       );
