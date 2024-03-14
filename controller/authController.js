@@ -16,6 +16,25 @@ const authController = {
     try {
       const { username, email, password, shop_name, owner_name, address } =
         req.body;
+
+        if (
+          username == null ||
+          email == null ||
+          password == null ||
+          shop_name == null ||
+          owner_name == null || 
+          address == null
+        ) {
+          return res.json({
+            success: false,
+            message: "All fields are mandotory",
+          });
+        }
+        const uniqueCheck = await User.findOne({where: { email : email}})
+        if(uniqueCheck){
+          res.json({success : false , message : "Email already used !Please use a unique email"});
+          return;
+        }
       const hashedPass = await bcrypt.hash(password, 10); //10 salt rounds
 
       const verificationToken = jwt.sign({ email }, secretKey, {
@@ -64,7 +83,7 @@ const authController = {
         });
     } catch (error) {
       console.log(error);
-      return res.json({ success: false, message: error });
+      return res.json({ success: false, message: "Something went wrong" }); 
     }
   },
 

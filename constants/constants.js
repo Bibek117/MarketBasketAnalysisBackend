@@ -1,3 +1,3 @@
- const unitEnergyPrice = 50;
+ const unitEnergyPrice = 20;
  
 export {unitEnergyPrice};
