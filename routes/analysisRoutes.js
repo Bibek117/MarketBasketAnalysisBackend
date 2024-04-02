@@ -16,6 +16,8 @@ const upload = multer({ storage: storage });
 router.post('/upload',upload.single('dfile'),(req,res)=>{
     analysisController.dataUpload(req,res,fileName)
 });
+
+router.post('/ecom',analysisController.performEcom);
 router.get("/allAnalysis/:userId",analysisController.getAllAnalysis);
 router.get("/singleAnalysisResult/:dataId",analysisController.getSingleData);
 router.delete("/delete/:dataId",analysisController.delete);

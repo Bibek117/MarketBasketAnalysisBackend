@@ -64,7 +64,7 @@ const authController = {
       const mailData = {
         recepEmail: email,
         subject: "Email verification link",
-        html: `<h3>Please click <a href="http://localhost:8000/api/auth/verify/${verificationToken}">here</a> to verify your email address.</h3>`,
+        html: `<h3>Please click <a href="http://localhost:8001/api/auth/verify/${verificationToken}">here</a> to verify your email address.</h3>`,
       };
 
       sendMail(mailData)
@@ -118,7 +118,7 @@ const authController = {
         const mailData = {
           recepEmail: email,
           subject: "Email verification link",
-          html: `<h3>Please click <a href="http://localhost:8000/api/auth/verify/${verificationToken}">here</a> to verify your email address.</h3>`,
+          html: `<h3>Please click <a href="http://localhost:8001/api/auth/verify/${verificationToken}">here</a> to verify your email address.</h3>`,
         };
         sendMail(mailData)
           .then((response) => {
