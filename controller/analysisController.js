@@ -29,6 +29,7 @@ const analysisController = {
         }
       );
       const fileData = fs.readFileSync(req.file.path);
+    //  console.log(req.file.path)
       const blobData = new Blob([fileData], { type: "text/csv" });
 
       const formData = new FormData();
@@ -155,6 +156,106 @@ const analysisController = {
         });
     }
   },
+
+  async performEcom(req,res){
+      try {
+        const { title, min_support, min_confidence, userId, api_result } =
+          req.body;
+         console.log(api_result);
+         const groupedData = api_result.reduce((acc, item) => {
+           const orderId = item.order_id;
+           if (!acc[orderId]) {
+             acc[orderId] = [];
+           }
+           acc[orderId].push(item);
+           return acc;
+         }, {});
+
+         // Write grouped data to CSV file
+         const csvData = Object.values(groupedData).map((items) =>
+           items.map((item) => item.product.name).join(",")
+         );
+         const csvContent = csvData.join("\n");
+         const fileName = `${title}${min_support}${userId}.csv`
+         fs.writeFileSync(
+           `public/data/${fileName}`,
+           csvContent
+         );
+
+         console.log("Data saved to output.csv");
+        const transactionData = await connection.query(
+          "INSERT INTO analysisdata (title,min_support,min_confidence, transaction_file_url,UserId) VALUES (?, ?, ?, ?, ?)",
+          {
+            replacements: [
+              title,
+              min_support,
+              min_confidence,
+              fileName,
+              userId,
+            ],
+            type: QueryTypes.INSERT,
+          }
+        );
+        const path = `public/data/${fileName}`;
+        const fileData = fs.readFileSync(path);
+        console.log(fileData)
+        const blobData = new Blob([fileData], { type: "text/csv" });
+
+        const formData = new FormData();
+        formData.append("support_threshold", min_support);
+        formData.append("confidence_threshold", min_confidence);
+        formData.append("file", blobData,fileName);
+
+        await axios
+          .post("http://127.0.0.1:5000/upload-csv", formData, {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          })
+          .then(async (response) => {
+            console.log(response)
+            let resultData = JSON.stringify(response.data);
+
+            const filename = `${
+              fileName
+            }${Date.now()}${userId}.json`;
+            fs.writeFileSync(`public/results/${filename}`, resultData);
+
+            await AnalysisData.update(
+              { analysis_resul_url: filename, analysis_done: true },
+              { where: { userId: userId, title: title } }
+            );
+
+            const energyData = await Energy.findOne({
+              where: { UserId: userId },
+            });
+            let energyTrack = energyData.energy_count - 1;
+            await Energy.update(
+              { energy_count: energyTrack },
+              { where: { UserId: userId } }
+            );
+            return res.status(200).json({
+              success: true,
+              message: "Analysis performed successfully",
+              result: resultData,
+              energy_count: energyTrack,
+            });
+          })
+          .catch((error) => {
+            return res.json({
+              success: false,
+              message: "Something went wrong",
+              error: error.message,
+            });
+          });
+      } catch (err) {
+        console.log(err.errors);
+        return res.json({
+          success: false,
+          error: err.errors || "Something went wrong",
+        });
+      }
+  }
 };
 
 
