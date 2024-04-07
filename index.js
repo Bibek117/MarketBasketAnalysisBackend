@@ -9,6 +9,7 @@ import cookieParser from "cookie-parser";
 import authRoutes from './routes/authRoutes.js'
 import analysisRoutes from './routes/analysisRoutes.js'
 import energyRoutes from './routes/energyRoutes.js';
+import adminRoutes from './routes/adminRoutes.js'
 
 
 
@@ -45,6 +46,7 @@ app.use(express.static('public'));
 app.use("/api/auth", authRoutes);
 app.use('/api/energy',energyRoutes)
 app.use('/api/analysis',analysisRoutes);
+app.use('/api/admin',adminRoutes);
 
 //sync({force:true})
 let port = process.env.PORT || 8001

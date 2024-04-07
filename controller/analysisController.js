@@ -255,6 +255,13 @@ const analysisController = {
           error: err.errors || "Something went wrong",
         });
       }
+  },
+
+  async totalAnalysis(req,res){
+    const user_id = req.params.userId;
+    console.log(user_id)
+    let count = await AnalysisData.count({where:{UserId : user_id}});
+    return res.json({success: true,count});
   }
 };
 
