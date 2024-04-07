@@ -17,6 +17,7 @@ router.post('/upload',upload.single('dfile'),(req,res)=>{
     analysisController.dataUpload(req,res,fileName)
 });
 
+router.get('/totalAnalysis/:userId',analysisController.totalAnalysis);
 router.post('/ecom',analysisController.performEcom);
 router.get("/allAnalysis/:userId",analysisController.getAllAnalysis);
 router.get("/singleAnalysisResult/:dataId",analysisController.getSingleData);
